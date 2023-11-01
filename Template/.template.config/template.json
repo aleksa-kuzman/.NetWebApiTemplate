@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Aleksa Kuzman",
+    "classifications": [
+        "Common",
+        "WebApi"
+    ],
+    "identity": "Net7.WebApi.Template",
+    "name": "Net7.WebApi",
+    "shortName": "Net7WebApi",
+    "sourceName": "Net7.WebApi.Template",
+    "preferNameDirectory": true
+}
