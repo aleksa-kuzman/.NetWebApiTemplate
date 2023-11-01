@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Net7.WebApi.Template.Models;
@@ -19,18 +20,21 @@ namespace Net7.WebApi.Template.Services
         private readonly ConfigurationOptions _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IDataProtector _protector;
 
         ///<inheritdoc/>
         public AuthService(
             ILogger<AuthService> logger,
             IOptions<ConfigurationOptions> configuration,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IDataProtectionProvider dataProtectionProvider)
         {
             _logger = logger;
             _configuration = configuration.Value;
             _userManager = userManager;
             _roleManager = roleManager;
+            _protector = dataProtectionProvider.CreateProtector("Net7.WebApi.Template.Services.AuthService.RefreshToken.V1");
         }
 
         public async Task<LoginResponse> Login(LoginRequest request)
@@ -48,15 +52,16 @@ namespace Net7.WebApi.Template.Services
             };
 
             user.RefreshTokenExpiryTime = DateTimeOffset.UtcNow.AddMinutes(_configuration.Tokens.RefreshTokenExpirationMinutes);
-            //await _uow.SaveAsync();
 
             var accessTokenExpiresInMinutes = _configuration.Tokens.ExpirationMinutes * 60;
 
+            var refreshToken = CreateRefreshToken(user);
+
             var loginResponse = new LoginResponse
             {
-                AccessToken = CreateToken(authClaims),
+                AccessToken = CreateAccessToken(authClaims),
                 Email = request.Email,
-                RefreshToken = user.RefreshToken,
+                RefreshToken = refreshToken,
                 AccessTokenExpiresIn = accessTokenExpiresInMinutes
             };
 
@@ -64,10 +69,31 @@ namespace Net7.WebApi.Template.Services
             {
                 authClaims.Add(new Claim(ClaimTypes.Role, role));
             }
+
+            //await _uow.SaveAsync();
+
             return loginResponse;
         }
 
-        private string CreateToken(List<Claim> authClaims)
+        private string CreateRefreshToken(ApplicationUser user)
+        {
+            var refreshToken = user.RefreshToken;
+
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                refreshToken = $"{Guid.NewGuid().ToString()}-{Guid.NewGuid().ToString()}";
+                refreshToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(refreshToken));
+                user.RefreshToken = _protector.Protect(refreshToken);
+            }
+            else
+            {
+                refreshToken = _protector.Unprotect(refreshToken);
+            }
+
+            return refreshToken;
+        }
+
+        private string CreateAccessToken(List<Claim> authClaims)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 

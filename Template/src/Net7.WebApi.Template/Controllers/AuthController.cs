@@ -13,6 +13,13 @@ namespace Net7.WebApi.Template.Controllers
     [ApiVersion("1.0")]
     public class AuthController : ControllerBase
     {
+        /// <summary>
+        /// User provides credentials
+        /// and gets access and refresh token
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
         [HttpPost("login")]
         [ProducesResponseType(typeof(LoginResponse), 200)]
         [ProducesResponseType(typeof(HttpErrorResponse), 400)]
