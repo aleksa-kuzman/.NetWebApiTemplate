@@ -9,7 +9,7 @@ namespace Net7.WebApi.Template.Controllers
     /// Handles authentication and authorization
     /// </summary>
     [ApiController]
-    [Route("api/v{version:apiVersion}/helloworld")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiVersion("1.0")]
     public class AuthController : ControllerBase
     {

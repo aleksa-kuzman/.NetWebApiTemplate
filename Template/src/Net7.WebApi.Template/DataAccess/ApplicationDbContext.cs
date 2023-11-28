@@ -14,6 +14,9 @@ namespace Net7.WebApi.Template.DataAcess
         ///<inheritdoc/>
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
+        ///<inheritdoc/>
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Net7.WebApi.Template;
+using Net7.WebApi.Template.DataAccess;
+using Net7.WebApi.Template.DataAccess.Contracts;
 using Net7.WebApi.Template.DataAcess;
 using Net7.WebApi.Template.Helpers;
 using Net7.WebApi.Template.Models.Options;
@@ -24,7 +26,9 @@ var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true);
 builder.Configuration.AddEnvironmentVariables().Build();
 
-// Add services to the container.
+// ### Add services to the container.
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+//
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {

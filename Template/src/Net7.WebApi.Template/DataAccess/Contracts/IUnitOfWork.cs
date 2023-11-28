@@ -1,5 +1,9 @@
 ﻿namespace Net7.WebApi.Template.DataAccess.Contracts
 {
+    /// <summary>
+    /// Wrapper around repositories to
+    /// preserve database transactions
+    /// </summary>
     public interface IUnitOfWork
     {
         /// <summary>
