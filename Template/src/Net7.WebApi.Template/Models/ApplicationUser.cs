@@ -3,7 +3,7 @@
 namespace Net7.WebApi.Template.Models
 {
     /// <inheritdoc />
-    public class ApplicationUser : IdentityUser
+    public class ApplicationUser : IdentityUser<Guid>
     {
         /// <summary>
         /// Stores refresh token

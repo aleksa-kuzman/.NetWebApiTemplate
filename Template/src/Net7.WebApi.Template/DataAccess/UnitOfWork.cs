@@ -1,4 +1,5 @@
 ﻿using Net7.WebApi.Template.DataAccess.Contracts;
+using Net7.WebApi.Template.DataAccess.Repositories;
 using Net7.WebApi.Template.DataAcess;
 
 namespace Net7.WebApi.Template.DataAccess
@@ -8,6 +9,8 @@ namespace Net7.WebApi.Template.DataAccess
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger _logger;
+
+        private IApplicationUserRepository _applicationUserRepository = null!;
 
         /// <summary>
         /// Parametrized constructor
@@ -42,6 +45,20 @@ namespace Net7.WebApi.Template.DataAccess
         public void ClearContext()
         {
             _context.ChangeTracker.Clear();
+        }
+
+        ///<inheritdoc/>
+        public IApplicationUserRepository ApplicationUserRepository
+        {
+            get
+            {
+                if (_applicationUserRepository == null)
+                {
+                    _applicationUserRepository = new ApplicationUserRepository(_context, _logger);
+                }
+
+                return _applicationUserRepository;
+            }
         }
     }
 }

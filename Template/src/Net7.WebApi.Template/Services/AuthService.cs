@@ -19,7 +19,7 @@ namespace Net7.WebApi.Template.Services
         private readonly ILogger _logger;
         private readonly ConfigurationOptions _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IDataProtector _protector;
 
         ///<inheritdoc/>
@@ -27,7 +27,7 @@ namespace Net7.WebApi.Template.Services
             ILogger<AuthService> logger,
             IOptions<ConfigurationOptions> configuration,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<ApplicationRole> roleManager,
             IDataProtectionProvider dataProtectionProvider)
         {
             _logger = logger;

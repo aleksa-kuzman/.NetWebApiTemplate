@@ -1,3 +1,4 @@
+using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +12,9 @@ using Net7.WebApi.Template.DataAccess;
 using Net7.WebApi.Template.DataAccess.Contracts;
 using Net7.WebApi.Template.DataAcess;
 using Net7.WebApi.Template.Helpers;
+using Net7.WebApi.Template.Models;
 using Net7.WebApi.Template.Models.Options;
+using Net7.WebApi.Template.Services;
 using Serilog;
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
@@ -29,6 +32,11 @@ builder.Configuration.AddEnvironmentVariables().Build();
 // ### Add services to the container.
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 //
+//
+builder.Services.AddTransient(typeof(UserService));
+builder.Services.AddTransient(typeof(AuthService));
+
+builder.Services.AddMapster();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -39,7 +47,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     });
 });
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 

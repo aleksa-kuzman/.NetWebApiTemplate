@@ -21,5 +21,10 @@
 
         ///<inheritdoc/>
         void ClearContext();
+
+        /// <summary>
+        /// Application user repository
+        /// </summary>
+        IApplicationUserRepository ApplicationUserRepository { get; }
     }
 }
