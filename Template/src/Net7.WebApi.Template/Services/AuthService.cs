@@ -37,10 +37,18 @@ namespace Net7.WebApi.Template.Services
             _protector = dataProtectionProvider.CreateProtector("Net7.WebApi.Template.Services.AuthService.RefreshToken.V1");
         }
 
-        public async Task<LoginResponse> Login(LoginRequest request)
+        /// <summary>
+        /// Logs the user in
+        /// and returns access and
+        /// refresh tokens
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user == null || await _userManager.CheckPasswordAsync(user, request.Password))
+            if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
             {
                 throw new Exception();
             }
@@ -50,6 +58,11 @@ namespace Net7.WebApi.Template.Services
                 new Claim(ClaimTypes.Name, user!.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
+
+            foreach (var role in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             user.RefreshTokenExpiryTime = DateTimeOffset.UtcNow.AddMinutes(_configuration.Tokens.RefreshTokenExpirationMinutes);
 
@@ -64,13 +77,6 @@ namespace Net7.WebApi.Template.Services
                 RefreshToken = refreshToken,
                 AccessTokenExpiresIn = accessTokenExpiresInMinutes
             };
-
-            foreach (var role in userRoles)
-            {
-                authClaims.Add(new Claim(ClaimTypes.Role, role));
-            }
-
-            //await _uow.SaveAsync();
 
             return loginResponse;
         }

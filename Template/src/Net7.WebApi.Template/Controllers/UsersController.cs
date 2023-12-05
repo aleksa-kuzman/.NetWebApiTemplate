@@ -52,5 +52,25 @@ namespace Net7.WebApi.Template.Controllers
             await _userService.SetPasswordAsync(req, userId);
             return Ok();
         }
+
+        /// <summary>
+        /// Admin resets an already existing password
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpPost("ChangePassword")]
+        [ProducesResponseType(typeof(CreateUserResponse), 200)]
+        [ProducesResponseType(typeof(HttpErrorResponse), 400)]
+        [ProducesResponseType(typeof(HttpErrorResponse), 401)]
+        [ProducesResponseType(typeof(HttpErrorResponse), 403)]
+        [ProducesResponseType(typeof(HttpErrorResponse), 500)]
+        [Produces("application/json")]
+        [AllowAnonymous]
+        public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordRequest req, Guid userId)
+        {
+            await _userService.ChangePasswordAsync(req, userId);
+            return Ok();
+        }
     }
 }

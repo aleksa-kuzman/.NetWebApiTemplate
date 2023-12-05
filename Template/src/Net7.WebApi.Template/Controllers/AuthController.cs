@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Net7.WebApi.Template.Resources;
 using Net7.WebApi.Template.Resources.Auth;
+using Net7.WebApi.Template.Services;
 
 namespace Net7.WebApi.Template.Controllers
 {
@@ -13,6 +14,14 @@ namespace Net7.WebApi.Template.Controllers
     [ApiVersion("1.0")]
     public class AuthController : ControllerBase
     {
+        private readonly AuthService _authService;
+
+        /// <inheritdoc/>
+        public AuthController(AuthService authService)
+        {
+            _authService = authService;
+        }
+
         /// <summary>
         /// User provides credentials
         /// and gets access and refresh token
@@ -30,7 +39,7 @@ namespace Net7.WebApi.Template.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
         {
-            throw new NotImplementedException();
+            return Ok(await _authService.LoginAsync(req));
         }
     }
 }

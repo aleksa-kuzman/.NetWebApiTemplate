@@ -38,9 +38,7 @@ namespace Net7.WebApi.Template.Services
         public async Task<CreateUserResponse> Create(CreateUserRequest createUserRequest)
         {
             var appUser = createUserRequest.Adapt<ApplicationUser>();
-            _uow.ApplicationUserRepository.Create(appUser);
-
-            await _uow.SaveAsync();
+            var res = await _userManager.CreateAsync(appUser);
 
             return appUser.Adapt<CreateUserResponse>();
         }
@@ -61,6 +59,11 @@ namespace Net7.WebApi.Template.Services
                 throw new BadRequestException("Invalid password change attempt");
             }
         }
+
+        //TODO: Change this endpoint,
+        //remove userId parameter
+        //when you implement login feature
+        //and take userId from claims principal
 
         /// <summary>
         /// Changes already existing password

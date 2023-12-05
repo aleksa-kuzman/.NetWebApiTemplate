@@ -19,6 +19,7 @@ using Serilog;
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +31,7 @@ builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: t
 builder.Configuration.AddEnvironmentVariables().Build();
 
 // ### Add services to the container.
+builder.Services.Configure<ConfigurationOptions>(builder.Configuration.GetSection(ConfigurationOptions.ConfigKey));
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 //
 //
@@ -56,6 +58,19 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+});
+
+builder.Services.AddAuthorization(policy =>
+{
+    policy.AddPolicy(Constants.READONLY_USER_POLICY, x => x.RequireClaim(ClaimTypes.Role, "Readonly")
+    .RequireAssertion(m => m.User.HasClaim(m => m.Type == ClaimTypes.Name && m.Type == ClaimTypes.NameIdentifier)));
+
+    policy.AddPolicy(Constants.ADMIN_POLICY, x => x.RequireClaim(ClaimTypes.Role, "Admin")
+    .RequireAssertion(m => m.User.HasClaim(m => m.Type == ClaimTypes.Name && m.Type == ClaimTypes.NameIdentifier)));
+
+    policy.AddPolicy(Constants.REGULAR_USER_POLICY, x => x.RequireAssertion(m => m.User.HasClaim(m => m.Type == ClaimTypes.Name && m.Type == ClaimTypes.NameIdentifier)));
+
+    policy.DefaultPolicy = policy.GetPolicy(Constants.REGULAR_USER_POLICY)!;
 });
 
 //Configure number of interations on cryptocraphic alghoritm
