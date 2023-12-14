@@ -29,7 +29,7 @@ namespace Net7.WebApi.Template.Controllers
         [ProducesResponseType(typeof(HttpErrorResponse), 403)]
         [ProducesResponseType(typeof(HttpErrorResponse), 500)]
         [Produces("application/json")]
-        [AllowAnonymous]
+        [Authorize(Policy = Constants.ADMIN_POLICY)]
         public async Task<ActionResult<CreateUserResponse>> Create([FromBody] CreateUserRequest req)
         {
             return Ok(await _userService.Create(req));

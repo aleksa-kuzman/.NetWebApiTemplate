@@ -38,6 +38,7 @@ namespace Net7.WebApi.Template.Services
         public async Task<CreateUserResponse> Create(CreateUserRequest createUserRequest)
         {
             var appUser = createUserRequest.Adapt<ApplicationUser>();
+            var addToRoleRes = await _userManager.AddToRoleAsync(appUser, createUserRequest.UserType);
             var res = await _userManager.CreateAsync(appUser);
 
             return appUser.Adapt<CreateUserResponse>();

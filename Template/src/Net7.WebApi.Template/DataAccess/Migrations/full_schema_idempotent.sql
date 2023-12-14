@@ -185,3 +185,41 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231205172753_SeedAdminAndRoles') THEN
+    INSERT INTO "AspNetRoles" ("Id", "ConcurrencyStamp", "Name", "NormalizedName")
+    VALUES ('550a0821-5fcf-41f3-8ace-0b698e70a6a9', NULL, 'RegularUser', 'RegularUser');
+    INSERT INTO "AspNetRoles" ("Id", "ConcurrencyStamp", "Name", "NormalizedName")
+    VALUES ('5a2e0382-92ae-4e1e-89e2-7b0454c45355', NULL, 'Admin', 'Admin');
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231205172753_SeedAdminAndRoles') THEN
+    INSERT INTO "AspNetUsers" ("Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RefreshToken", "RefreshTokenExpiryTime", "SecurityStamp", "TwoFactorEnabled", "UserName")
+    VALUES ('531eee9e-ee49-4ff1-a3c8-728af795cb75', 0, 'd60e4070-7e52-4a6b-8967-8f32845c38c2', NULL, FALSE, FALSE, NULL, NULL, NULL, NULL, NULL, FALSE, NULL, TIMESTAMPTZ '-infinity', NULL, FALSE, 'System Admin');
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231205172753_SeedAdminAndRoles') THEN
+    INSERT INTO "AspNetUserRoles" ("RoleId", "UserId")
+    VALUES ('5a2e0382-92ae-4e1e-89e2-7b0454c45355', '531eee9e-ee49-4ff1-a3c8-728af795cb75');
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231205172753_SeedAdminAndRoles') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20231205172753_SeedAdminAndRoles', '7.0.13');
+    END IF;
+END $EF$;
+COMMIT;
+

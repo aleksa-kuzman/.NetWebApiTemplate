@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Net7.WebApi.Template;
 using Net7.WebApi.Template.DataAccess;
@@ -21,6 +22,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,13 @@ builder.Configuration.SetBasePath(Directory.GetCurrentDirectory());
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddJsonFile($"appsettings.json", optional: true, reloadOnChange: true);
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
 builder.Configuration.AddEnvironmentVariables().Build();
 
 // ### Add services to the container.
@@ -53,30 +62,52 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+var configOptions = builder.Configuration.GetSection(ConfigurationOptions.ConfigKey).Get<ConfigurationOptions>();
+
+if (configOptions == null)
+{
+    throw new Exception("Startup failed, appsettings configuration missing");
+}
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(o =>
+{
+    o.IncludeErrorDetails = true;
+    o.RequireHttpsMetadata = false;
+    o.SaveToken = false;
+
+    o.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = configOptions.Tokens.Issuer,
+        ValidAudience = configOptions.Tokens.Issuer,
+        ValidateLifetime = true,
+        ValidateAudience = true,
+        ValidateIssuer = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configOptions.Tokens.Key)),
+        ClockSkew = TimeSpan.Zero
+    };
 });
 
 builder.Services.AddAuthorization(policy =>
 {
-    policy.AddPolicy(Constants.READONLY_USER_POLICY, x => x.RequireClaim(ClaimTypes.Role, "Readonly")
-    .RequireAssertion(m => m.User.HasClaim(m => m.Type == ClaimTypes.Name && m.Type == ClaimTypes.NameIdentifier)));
+    policy.AddPolicy(Constants.REGULAR_USER_POLICY, x => x.RequireClaim(ClaimTypes.Role, "Regular")
+    .RequireAssertion(m => m.User.HasClaim(m => m.Type == ClaimTypes.Name) && m.User.HasClaim(m => m.Type == ClaimTypes.NameIdentifier)));
 
-    policy.AddPolicy(Constants.ADMIN_POLICY, x => x.RequireClaim(ClaimTypes.Role, "Admin")
-    .RequireAssertion(m => m.User.HasClaim(m => m.Type == ClaimTypes.Name && m.Type == ClaimTypes.NameIdentifier)));
+    policy.AddPolicy(Constants.ADMIN_POLICY, x => x.RequireRole(ClaimTypes.Role, "Admin")
+    .RequireAssertion(m => m.User.HasClaim(m => m.Type == ClaimTypes.Name) && m.User.HasClaim(m => m.Type == ClaimTypes.NameIdentifier)));
 
-    policy.AddPolicy(Constants.REGULAR_USER_POLICY, x => x.RequireAssertion(m => m.User.HasClaim(m => m.Type == ClaimTypes.Name && m.Type == ClaimTypes.NameIdentifier)));
+    policy.AddPolicy(Constants.READONLY_USER_POLICY, x => x.RequireAssertion(m => m.User.HasClaim(m => m.Type == ClaimTypes.Name && m.Type == ClaimTypes.NameIdentifier)));
 
     policy.DefaultPolicy = policy.GetPolicy(Constants.REGULAR_USER_POLICY)!;
 });
 
 //Configure number of interations on cryptocraphic alghoritm
 builder.Services.Configure<PasswordHasherOptions>(opt => opt.IterationCount = 600_000);
-
-var configOptions = builder.Configuration.GetSection(ConfigurationOptions.ConfigKey).Get<ConfigurationOptions>();
 
 var dpBuilder = builder.Services.AddDataProtection()
                .SetApplicationName(configOptions.AppName)
